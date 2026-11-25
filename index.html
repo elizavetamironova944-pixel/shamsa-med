@@ -111,15 +111,14 @@
     <div class="nav-logo">Ш</div>
     <div>
       <div class="nav-title">Портал медицинских осмотров</div>
-      <div class="nav-subtitle">Холдинг «Шамса» • Единая корпоративная база</div>
+      <div class="nav-subtitle">Холдинг «Шамса» • Облачная синхронизация Google Sheets</div>
     </div>
   </div>
 
   <div class="nav-right">
-    <!-- Индикатор облака -->
     <div class="cloud-status">
       <div class="cloud-dot" id="cloudDot"></div>
-      <span id="cloudStatusText">Облако подключено</span>
+      <span id="cloudStatusText">База подключена</span>
     </div>
 
     <button class="btn btn-outline" style="color:white; border-color:#475569; background:#334155;" onclick="loadFromGoogleCloud()" title="Обновить свежие данные">
@@ -136,7 +135,7 @@
       <div class="alert-icon">🔔</div>
       <div>
         <div class="alert-title" id="alertTitle">ПРОВЕРКА СРОКОВ МЕДОСМОТРОВ</div>
-        <div class="alert-desc" id="alertDesc">Загрузка данных из единой базы...</div>
+        <div class="alert-desc" id="alertDesc">Загрузка данных из облака...</div>
       </div>
     </div>
     <button class="btn btn-primary" onclick="exportToExcel()">📥 Скачать отчет в Excel</button>
@@ -150,7 +149,7 @@
       <button class="btn btn-outline" onclick="changeYear(1)">Следующий год ▶</button>
     </div>
     <div style="font-size:13px; color:var(--muted);">
-      График на любой год: <b>2026, 2027, 2028, 2029, 2030+</b>
+      График на любой период: <b>2026, 2027, 2028, 2029, 2030+</b>
     </div>
   </div>
 
@@ -280,7 +279,6 @@
 </div>
 
 <script>
-// ТВОЙ ОБЛАЧНЫЙ СЕРВЕР GOOGLE
 const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycby1mj-4jSlyI9t4lU8Ce9W9OgjRoYbwjaXnAcgRZnfCmqB9uiJbPWYnJpChcAHKFwBWHQ/exec";
 
 const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
@@ -288,13 +286,13 @@ const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', '�
 let state = {
   currentYear: 2027,
   viewMode: 'grid',
-  companies: JSON.parse(localStorage.getItem('shamsa_comps_simple')) || [
+  companies: [
     "ООО «Шамса-Логистик Центр»",
     "ООО «Дискам»",
     "ООО «Шамса-Маркет»",
     "ООО «Шамса-Холдинг»"
   ],
-  roles: JSON.parse(localStorage.getItem('shamsa_roles_simple')) || [
+  roles: [
     "Водитель-экспедитор",
     "Кладовщик",
     "Грузчик",
@@ -303,14 +301,7 @@ let state = {
     "Оператор 1С",
     "Контролер"
   ],
-  employees: [
-    { id: 1, fio: "Бекшаев Никита Олегович", company: "ООО «Шамса-Логистик Центр»", role: "Водитель-экспедитор", lastDate: "2026-01-14", period: 12 },
-    { id: 2, fio: "Черепанов Александр Николаевич", company: "ООО «Шамса-Логистик Центр»", role: "Водитель-экспедитор", lastDate: "2026-02-10", period: 12 },
-    { id: 3, fio: "Акжигитов Бекжан Абдуталипович", company: "ООО «Дискам»", role: "Водитель-экспедитор", lastDate: "2026-03-05", period: 12 },
-    { id: 4, fio: "Мукашев Назар Мураталиевич", company: "ООО «Шамса-Маркет»", role: "Кладовщик", lastDate: "2026-03-20", period: 12 },
-    { id: 5, fio: "Карапетян Гамлет Григоревич", company: "ООО «Шамса-Холдинг»", role: "Мастер по ремонту", lastDate: "2026-04-12", period: 12 },
-    { id: 6, fio: "Козлов Дмитрий Николаевич", company: "ООО «Шамса-Логистик Центр»", role: "Водитель-экспедитор", lastDate: "2026-05-18", period: 12 }
-  ]
+  employees: []
 };
 
 function setCloudState(isSyncing, text) {
@@ -326,25 +317,36 @@ function setCloudState(isSyncing, text) {
 }
 
 async function loadFromGoogleCloud() {
-  setCloudState(true, 'Загрузка...');
+  setCloudState(true, 'Загрузка из облака...');
   try {
     const res = await fetch(GOOGLE_API_URL);
     const data = await res.json();
-    if (Array.isArray(data) && data.length > 0) {
+    
+    if (data.employees && Array.isArray(data.employees)) {
+      state.employees = data.employees;
+    } else if (Array.isArray(data)) {
       state.employees = data;
-      setCloudState(false, 'База подключена');
-    } else {
-      await syncToGoogleCloud();
     }
+    
+    // Синхронизируем компании и роли из облака, если они там есть
+    if (data.companies && Array.isArray(data.companies) && data.companies.length > 0) {
+      state.companies = data.companies;
+    }
+    if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
+      state.roles = data.roles;
+    }
+
+    setCloudState(false, 'База подключена');
     renderApp();
   } catch (err) {
-    setCloudState(false, 'Локальный режим');
+    console.error('Ошибка загрузки:', err);
+    setCloudState(false, 'Ошибка подключения');
     renderApp();
   }
 }
 
 async function syncToGoogleCloud() {
-  setCloudState(true, 'Сохранение...');
+  setCloudState(true, 'Сохранение в облако...');
   try {
     await fetch(GOOGLE_API_URL, {
       method: 'POST',
@@ -352,28 +354,38 @@ async function syncToGoogleCloud() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'saveAll',
-        data: state.employees
+        data: {
+          employees: state.employees,
+          companies: state.companies,
+          roles: state.roles
+        }
       })
     });
     setCloudState(false, 'Данные сохранены');
   } catch (err) {
+    console.error('Ошибка сохранения:', err);
     setCloudState(false, 'Ошибка сети');
   }
 }
 
-function saveLocalConfigs() {
-  localStorage.setItem('shamsa_comps_simple', JSON.stringify(state.companies));
-  localStorage.setItem('shamsa_roles_simple', JSON.stringify(state.roles));
-}
-
 function getNextDate(lastDateStr, period) {
-  const d = new Date(lastDateStr);
+  const parts = String(lastDateStr).split('-');
+  let d;
+  if (parts.length === 3) {
+    d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  } else {
+    d = new Date(lastDateStr);
+  }
   d.setMonth(d.getMonth() + parseInt(period));
   return d;
 }
 
 function formatDate(d) {
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+}
+
+function formatDateISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function changeYear(delta) {
@@ -445,7 +457,7 @@ function renderApp() {
             <div class="emp-meta">${e.role}</div>
             <div class="emp-plan-date">План: ${formatDate(getNextDate(e.lastDate, e.period))}</div>
             <div class="emp-btns">
-              <button class="btn-sm-done" onclick="markPassed(${e.id})" title="Продлить срок на период">✓ Сдал</button>
+              <button class="btn-sm-done" onclick="markPassed(${e.id})" title="Отметить сдачу и перенести на следующий срок">✓ Сдал</button>
               <button class="btn-sm-del" onclick="deleteEmp(${e.id})">✕</button>
             </div>
           </div>
@@ -491,10 +503,15 @@ function updateDropdowns() {
   mRole.innerHTML = state.roles.map(r => `<option value="${r}">${r}</option>`).join('');
 }
 
+// Кнопка СДАЛ — теперь правильно продвигает дату вперед!
 async function markPassed(id) {
   const emp = state.employees.find(e => e.id === id);
   if (!emp) return;
-  emp.lastDate = new Date().toISOString().split('T')[0];
+  
+  // Дата сдачи становится той плановой датой, которая была назначена
+  const nextPlanDate = getNextDate(emp.lastDate, emp.period);
+  emp.lastDate = formatDateISO(nextPlanDate);
+  
   renderApp();
   await syncToGoogleCloud();
 }
@@ -536,6 +553,7 @@ async function saveEmployee() {
   await syncToGoogleCloud();
 }
 
+// Компании
 function openCompModal() {
   renderCompaniesList();
   document.getElementById('compModal').style.display = 'flex';
@@ -551,25 +569,26 @@ function renderCompaniesList() {
   `).join('');
 }
 
-function addNewCompany() {
+async function addNewCompany() {
   const val = document.getElementById('newCompInput').value.trim();
   if (!val) return alert('Введите название компании!');
   state.companies.push(val);
   document.getElementById('newCompInput').value = '';
   renderCompaniesList();
-  saveLocalConfigs();
   renderApp();
+  await syncToGoogleCloud();
 }
 
-function deleteCompany(idx) {
+async function deleteCompany(idx) {
   if (confirm('Удалить компанию?')) {
     state.companies.splice(idx, 1);
     renderCompaniesList();
-    saveLocalConfigs();
     renderApp();
+    await syncToGoogleCloud();
   }
 }
 
+// Должности
 function openRoleModal() {
   renderRolesList();
   document.getElementById('roleModal').style.display = 'flex';
@@ -585,22 +604,22 @@ function renderRolesList() {
   `).join('');
 }
 
-function addNewRole() {
+async function addNewRole() {
   const val = document.getElementById('newRoleInput').value.trim();
   if (!val) return alert('Введите название должности!');
   state.roles.push(val);
   document.getElementById('newRoleInput').value = '';
   renderRolesList();
-  saveLocalConfigs();
   renderApp();
+  await syncToGoogleCloud();
 }
 
-function deleteRole(idx) {
+async function deleteRole(idx) {
   if (confirm('Удалить эту должность из справочника?')) {
     state.roles.splice(idx, 1);
     renderRolesList();
-    saveLocalConfigs();
     renderApp();
+    await syncToGoogleCloud();
   }
 }
 
