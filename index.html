@@ -3,104 +3,106 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Портал медосмотров — Холдинг «Шамса»</title>
+<title>Портал медицинских осмотров</title>
 <style>
   :root {
-    --primary: #2563eb;
-    --primary-dark: #1d4ed8;
+    --primary: #f97316; /* Теплый насыщенный оранжевый */
+    --primary-dark: #ea580c;
+    --accent-red: #ef4444; /* Сочный красный */
+    --accent-yellow: #f59e0b; /* Золотисто-желтый */
     --success: #16a34a;
-    --warning: #f59e0b;
     --danger: #dc2626;
-    --bg: #f8fafc;
+    --bg: #fffbeb; /* Мягкий теплый бежево-желтоватый фон */
     --card: #ffffff;
-    --text: #0f172a;
-    --muted: #64748b;
-    --border: #e2e8f0;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #fed7aa; /* Персиковая рамка */
   }
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
   body { background: var(--bg); color: var(--text); padding-bottom: 60px; }
 
-  /* Навбар */
-  .navbar { background: #1e293b; color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 12px; }
+  /* Навбар в закатных тонах */
+  .navbar { background: linear-gradient(135deg, #7c2d12 0%, #c2410c 50%, #ea580c 100%); color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2); flex-wrap: wrap; gap: 12px; }
   .nav-left { display: flex; align-items: center; gap: 12px; }
-  .nav-logo { background: linear-gradient(135deg, #2563eb, #7c3aed); width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: white; }
-  .nav-title { font-size: 16px; font-weight: 700; }
-  .nav-subtitle { font-size: 11px; color: #94a3b8; }
+  .nav-logo { background: linear-gradient(135deg, #f59e0b, #ef4444); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+  .nav-title { font-size: 18px; font-weight: 800; letter-spacing: -0.2px; }
+  .nav-subtitle { font-size: 12px; color: #ffedd5; }
   
   .nav-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .cloud-status { display: flex; align-items: center; gap: 6px; background: #0f172a; padding: 6px 12px; border-radius: 20px; font-size: 12px; color: #38bdf8; border: 1px solid #334155; }
+  .cloud-status { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.25); padding: 6px 14px; border-radius: 20px; font-size: 12px; color: #fef08a; border: 1px solid rgba(254, 240, 138, 0.3); }
   .cloud-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; }
-  .cloud-dot.syncing { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; animation: pulse 1s infinite; }
+  .cloud-dot.syncing { background: #fde047; box-shadow: 0 0 8px #fde047; animation: pulse 1s infinite; }
   @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
   .container { max-width: 1350px; margin: 24px auto; padding: 0 16px; }
 
   /* Кнопки и контролы */
   button, input, select { padding: 9px 14px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; outline: none; }
-  input:focus, select:focus { border-color: var(--primary); }
+  input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px #ffedd5; }
   .btn { cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; }
-  .btn-primary { background: var(--primary); color: white; border: none; }
-  .btn-primary:hover { background: var(--primary-dark); }
-  .btn-success { background: var(--success); color: white; border: none; }
+  .btn-primary { background: linear-gradient(135deg, #f97316, #ef4444); color: white; border: none; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25); }
+  .btn-primary:hover { background: linear-gradient(135deg, #ea580c, #dc2626); }
+  .btn-success { background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; }
   .btn-success:hover { background: #15803d; }
-  .btn-outline { background: white; border: 1px solid var(--border); color: var(--text); }
-  .btn-outline:hover { background: #f1f5f9; }
+  .btn-outline { background: white; border: 1px solid var(--border); color: #7c2d12; font-weight: 600; }
+  .btn-outline:hover { background: #fff7ed; border-color: #fdba74; }
   .btn-sm-del { background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; padding: 3px 8px; border-radius: 6px; font-size: 11px; cursor: pointer; }
   .btn-sm-del:hover { background: #fecaca; }
-  .btn-sm-done { background: #dcfce7; border: 1px solid #86efac; color: #16a34a; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
-  .btn-sm-done:hover { background: #bbf7d0; }
+  .btn-sm-done { background: #fef3c7; border: 1px solid #fde047; color: #b45309; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .btn-sm-done:hover { background: #fde68a; }
 
   /* Баннер-напоминалка */
-  .alert-banner { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid var(--primary); padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .alert-banner { background: #fff7ed; border: 1px solid #fed7aa; border-left: 5px solid #f97316; padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(249, 115, 22, 0.08); }
   .alert-left { display: flex; align-items: center; gap: 12px; }
   .alert-icon { font-size: 24px; }
-  .alert-title { font-weight: 700; color: #1e3a8a; font-size: 13px; }
-  .alert-desc { font-size: 13px; color: #1e40af; margin-top: 2px; }
+  .alert-title { font-weight: 700; color: #9a3412; font-size: 13px; }
+  .alert-desc { font-size: 13px; color: #c2410c; margin-top: 2px; }
 
   /* Переключатель годов */
   .year-bar { display: flex; align-items: center; justify-content: space-between; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
   .year-nav { display: flex; align-items: center; gap: 12px; }
-  .current-year { font-size: 22px; font-weight: 800; color: #0f172a; }
+  .current-year { font-size: 22px; font-weight: 800; color: #c2410c; }
 
   /* Панель фильтров */
-  .controls-card { background: white; border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+  .controls-card { background: white; border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 1px 4px rgba(249, 115, 22, 0.06); }
   .controls-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
   .filters-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .actions-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
   /* Сетка месяцев */
   .months-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-  .month-col { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 14px; min-height: 220px; display: flex; flex-direction: column; }
-  .month-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 10px; }
-  .month-title { font-weight: 700; font-size: 15px; color: #1e293b; }
-  .month-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: #f1f5f9; color: #64748b; }
-  .month-badge.has-items { background: #dbeafe; color: #1d4ed8; }
+  .month-col { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 14px; min-height: 220px; display: flex; flex-direction: column; transition: transform 0.15s, box-shadow 0.15s; }
+  .month-col:hover { box-shadow: 0 4px 10px rgba(249, 115, 22, 0.1); border-color: #fb923c; }
+  .month-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fff7ed; padding-bottom: 8px; margin-bottom: 10px; }
+  .month-title { font-weight: 700; font-size: 15px; color: #9a3412; }
+  .month-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; }
+  .month-badge.has-items { background: #ffedd5; color: #c2410c; border-color: #fed7aa; }
 
-  .emp-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 8px; font-size: 12px; }
-  .emp-fio { font-weight: 700; color: #0f172a; font-size: 13px; }
-  .emp-tag-comp { display: inline-block; background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin: 4px 0; }
+  .emp-card { background: #fffbf5; border: 1px solid #fed7aa; border-radius: 8px; padding: 10px; margin-bottom: 8px; font-size: 12px; }
+  .emp-fio { font-weight: 700; color: #431407; font-size: 13px; }
+  .emp-tag-comp { display: inline-block; background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin: 4px 0; }
   .emp-meta { color: var(--muted); font-size: 11px; margin-top: 2px; }
-  .emp-plan-date { color: #0284c7; font-weight: 700; margin-top: 4px; font-size: 11px; }
+  .emp-plan-date { color: #ea580c; font-weight: 700; margin-top: 4px; font-size: 11px; }
   .emp-btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; }
 
   /* Табличный вид */
   .table-card { background: white; border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-  th { background: #f8fafc; padding: 12px 14px; color: #475569; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
-  tr:hover td { background: #f8fafc; }
+  th { background: #fff7ed; padding: 12px 14px; color: #9a3412; font-weight: 700; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 12px 14px; border-bottom: 1px solid #fed7aa; }
+  tr:hover td { background: #fffbf5; }
 
   /* Модалки */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; padding: 16px; }
-  .modal-box { background: white; border-radius: 14px; width: 500px; max-width: 100%; padding: 22px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
-  .modal-head { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(67, 20, 7, 0.5); justify-content: center; align-items: center; z-index: 1000; padding: 16px; backdrop-filter: blur(2px); }
+  .modal-box { background: white; border-radius: 14px; width: 500px; max-width: 100%; padding: 22px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(234, 88, 12, 0.2); border: 1px solid var(--border); }
+  .modal-head { font-size: 17px; font-weight: 800; margin-bottom: 14px; color: #9a3412; }
   .form-field { margin-bottom: 12px; }
-  .form-field label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; }
+  .form-field label { display: block; font-size: 11px; font-weight: 700; color: #9a3412; margin-bottom: 4px; text-transform: uppercase; }
   .form-field input, .form-field select { width: 100%; }
   .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 
-  .chips-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 12px; padding: 4px; border: 1px solid #f1f5f9; border-radius: 8px; }
-  .chip-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: #f8fafc; border-radius: 6px; font-size: 13px; }
+  .chips-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 12px; padding: 4px; border: 1px solid #fed7aa; border-radius: 8px; }
+  .chip-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: #fffbf5; border-radius: 6px; font-size: 13px; border: 1px solid #ffedd5; }
 </style>
 </head>
 <body>
@@ -108,10 +110,10 @@
 <!-- НАВБАР -->
 <div class="navbar">
   <div class="nav-left">
-    <div class="nav-logo">Ш</div>
+    <div class="nav-logo">🩺</div>
     <div>
       <div class="nav-title">Портал медицинских осмотров</div>
-      <div class="nav-subtitle">Холдинг «Шамса» • Облачная синхронизация Google Sheets</div>
+      <div class="nav-subtitle">Единая корпоративная база данных</div>
     </div>
   </div>
 
@@ -121,7 +123,7 @@
       <span id="cloudStatusText">База подключена</span>
     </div>
 
-    <button class="btn btn-outline" style="color:white; border-color:#475569; background:#334155;" onclick="loadFromGoogleCloud()" title="Обновить свежие данные">
+    <button class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.4); background:rgba(0,0,0,0.25);" onclick="loadFromGoogleCloud()" title="Обновить свежие данные">
       🔄 Обновить
     </button>
   </div>
@@ -186,7 +188,7 @@
       <thead>
         <tr>
           <th>№</th>
-          <th>Компания филиала</th>
+          <th>Компания</th>
           <th>ФИО Сотрудника</th>
           <th>Должность</th>
           <th>Дата прошлого осмотра</th>
@@ -212,7 +214,7 @@
     </div>
 
     <div class="form-field">
-      <label>Компания холдинга *</label>
+      <label>Компания *</label>
       <select id="empCompanySelect"></select>
     </div>
 
@@ -245,10 +247,10 @@
 <!-- МОДАЛКА: Управление компаниями -->
 <div class="modal-overlay" id="compModal">
   <div class="modal-box">
-    <div class="modal-head">Компании холдинга «Шамса»</div>
+    <div class="modal-head">Список компаний</div>
     <div class="chips-list" id="companiesContainer"></div>
     <div class="form-field">
-      <label>Добавить новую компанию / филиал:</label>
+      <label>Добавить новую компанию:</label>
       <div style="display:flex; gap:8px;">
         <input type="text" id="newCompInput" placeholder="Например: ООО «Новая логистика»">
         <button class="btn btn-primary" onclick="addNewCompany()">Добавить</button>
@@ -328,7 +330,6 @@ async function loadFromGoogleCloud() {
       state.employees = data;
     }
     
-    // Синхронизируем компании и роли из облака, если они там есть
     if (data.companies && Array.isArray(data.companies) && data.companies.length > 0) {
       state.companies = data.companies;
     }
@@ -449,7 +450,7 @@ function renderApp() {
         <span class="month-badge ${inMonth.length > 0 ? 'has-items' : ''}">${inMonth.length} чел.</span>
       </div>
       <div style="flex:1;">
-        ${inMonth.length === 0 ? '<div style="color:#94a3b8; font-size:12px; text-align:center; padding:18px 0;">Нет записей</div>' : ''}
+        ${inMonth.length === 0 ? '<div style="color:#d97706; font-size:12px; text-align:center; padding:18px 0; opacity:0.6;">Нет записей</div>' : ''}
         ${inMonth.map(e => `
           <div class="emp-card">
             <div class="emp-fio">${e.fio}</div>
@@ -475,7 +476,7 @@ function renderApp() {
       <td><b>${e.fio}</b></td>
       <td>${e.role}</td>
       <td>${formatDate(new Date(e.lastDate))}</td>
-      <td><b style="color:#0284c7;">${formatDate(getNextDate(e.lastDate, e.period))}</b></td>
+      <td><b style="color:#ea580c;">${formatDate(getNextDate(e.lastDate, e.period))}</b></td>
       <td>${e.period} мес.</td>
       <td>
         <button class="btn-sm-done" onclick="markPassed(${e.id})">✓ Сдал</button>
@@ -503,12 +504,10 @@ function updateDropdowns() {
   mRole.innerHTML = state.roles.map(r => `<option value="${r}">${r}</option>`).join('');
 }
 
-// Кнопка СДАЛ — теперь правильно продвигает дату вперед!
 async function markPassed(id) {
   const emp = state.employees.find(e => e.id === id);
   if (!emp) return;
   
-  // Дата сдачи становится той плановой датой, которая была назначена
   const nextPlanDate = getNextDate(emp.lastDate, emp.period);
   emp.lastDate = formatDateISO(nextPlanDate);
   
@@ -553,7 +552,6 @@ async function saveEmployee() {
   await syncToGoogleCloud();
 }
 
-// Компании
 function openCompModal() {
   renderCompaniesList();
   document.getElementById('compModal').style.display = 'flex';
@@ -588,7 +586,6 @@ async function deleteCompany(idx) {
   }
 }
 
-// Должности
 function openRoleModal() {
   renderRolesList();
   document.getElementById('roleModal').style.display = 'flex';
@@ -618,8 +615,8 @@ async function deleteRole(idx) {
   if (confirm('Удалить эту должность из справочника?')) {
     state.roles.splice(idx, 1);
     renderRolesList();
+    saveLocalConfigs();
     renderApp();
-    await syncToGoogleCloud();
   }
 }
 
@@ -631,7 +628,7 @@ function exportToExcel() {
   let table = `<table border="1">
     <tr>
       <th>№</th>
-      <th>Компания филиала</th>
+      <th>Компания</th>
       <th>ФИО</th>
       <th>Должность</th>
       <th>Дата предыдущего медосмотра</th>
@@ -656,7 +653,7 @@ function exportToExcel() {
   const blob = new Blob(['\ufeff' + table], { type: 'application/vnd.ms-excel;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `План_медосмотров_Шамса_${state.currentYear}.xls`;
+  a.download = `План_медосмотров_${state.currentYear}.xls`;
   a.click();
 }
 
