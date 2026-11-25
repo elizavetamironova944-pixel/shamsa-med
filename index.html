@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Портал медосмотров — Холдинг «Шамса»</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #dc2626;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+  body { background: var(--bg); color: var(--text); padding-bottom: 60px; }
+
+  /* Навбар */
+  .navbar { background: #1e293b; color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 12px; }
+  .nav-left { display: flex; align-items: center; gap: 12px; }
+  .nav-logo { background: linear-gradient(135deg, #2563eb, #7c3aed); width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: white; }
+  .nav-title { font-size: 16px; font-weight: 700; }
+  .nav-subtitle { font-size: 11px; color: #94a3b8; }
+  
+  .nav-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .cloud-status { display: flex; align-items: center; gap: 6px; background: #0f172a; padding: 6px 12px; border-radius: 20px; font-size: 12px; color: #38bdf8; border: 1px solid #334155; }
+  .cloud-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+  .cloud-dot.syncing { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; animation: pulse 1s infinite; }
+  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+  .container { max-width: 1350px; margin: 24px auto; padding: 0 16px; }
+
+  /* Кнопки и контролы */
+  button, input, select { padding: 9px 14px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; outline: none; }
+  input:focus, select:focus { border-color: var(--primary); }
+  .btn { cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; }
+  .btn-primary { background: var(--primary); color: white; border: none; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-success { background: var(--success); color: white; border: none; }
+  .btn-success:hover { background: #15803d; }
+  .btn-outline { background: white; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: #f1f5f9; }
+  .btn-sm-del { background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; padding: 3px 8px; border-radius: 6px; font-size: 11px; cursor: pointer; }
+  .btn-sm-del:hover { background: #fecaca; }
+  .btn-sm-done { background: #dcfce7; border: 1px solid #86efac; color: #16a34a; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .btn-sm-done:hover { background: #bbf7d0; }
+
+  /* Баннер-напоминалка */
+  .alert-banner { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid var(--primary); padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .alert-left { display: flex; align-items: center; gap: 12px; }
+  .alert-icon { font-size: 24px; }
+  .alert-title { font-weight: 700; color: #1e3a8a; font-size: 13px; }
+  .alert-desc { font-size: 13px; color: #1e40af; margin-top: 2px; }
+
+  /* Переключатель годов */
+  .year-bar { display: flex; align-items: center; justify-content: space-between; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .year-nav { display: flex; align-items: center; gap: 12px; }
+  .current-year { font-size: 22px; font-weight: 800; color: #0f172a; }
+
+  /* Панель фильтров */
+  .controls-card { background: white; border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+  .controls-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .filters-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .actions-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  /* Сетка месяцев */
+  .months-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .month-col { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 14px; min-height: 220px; display: flex; flex-direction: column; }
+  .month-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 10px; }
+  .month-title { font-weight: 700; font-size: 15px; color: #1e293b; }
+  .month-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: #f1f5f9; color: #64748b; }
+  .month-badge.has-items { background: #dbeafe; color: #1d4ed8; }
+
+  .emp-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 8px; font-size: 12px; }
+  .emp-fio { font-weight: 700; color: #0f172a; font-size: 13px; }
+  .emp-tag-comp { display: inline-block; background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin: 4px 0; }
+  .emp-meta { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .emp-plan-date { color: #0284c7; font-weight: 700; margin-top: 4px; font-size: 11px; }
+  .emp-btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; }
+
+  /* Табличный вид */
+  .table-card { background: white; border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+  th { background: #f8fafc; padding: 12px 14px; color: #475569; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafc; }
+
+  /* Модалки */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; padding: 16px; }
+  .modal-box { background: white; border-radius: 14px; width: 500px; max-width: 100%; padding: 22px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+  .modal-head { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+  .form-field { margin-bottom: 12px; }
+  .form-field label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; }
+  .form-field input, .form-field select { width: 100%; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+  .chips-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 12px; padding: 4px; border: 1px solid #f1f5f9; border-radius: 8px; }
+  .chip-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: #f8fafc; border-radius: 6px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- НАВБАР -->
+<div class="navbar">
+  <div class="nav-left">
+    <div class="nav-logo">Ш</div>
+    <div>
+      <div class="nav-title">Портал медицинских осмотров</div>
+      <div class="nav-subtitle">Холдинг «Шамса» • Единая корпоративная база</div>
+    </div>
+  </div>
+
+  <div class="nav-right">
+    <!-- Индикатор облака -->
+    <div class="cloud-status">
+      <div class="cloud-dot" id="cloudDot"></div>
+      <span id="cloudStatusText">Облако подключено</span>
+    </div>
+
+    <button class="btn btn-outline" style="color:white; border-color:#475569; background:#334155;" onclick="loadFromGoogleCloud()" title="Обновить свежие данные">
+      🔄 Обновить
+    </button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Баннер-уведомление -->
+  <div class="alert-banner">
+    <div class="alert-left">
+      <div class="alert-icon">🔔</div>
+      <div>
+        <div class="alert-title" id="alertTitle">ПРОВЕРКА СРОКОВ МЕДОСМОТРОВ</div>
+        <div class="alert-desc" id="alertDesc">Загрузка данных из единой базы...</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="exportToExcel()">📥 Скачать отчет в Excel</button>
+  </div>
+
+  <!-- Год и навигация -->
+  <div class="year-bar">
+    <div class="year-nav">
+      <button class="btn btn-outline" onclick="changeYear(-1)">◀ Предыдущий год</button>
+      <div class="current-year" id="displayYear">2027</div>
+      <button class="btn btn-outline" onclick="changeYear(1)">Следующий год ▶</button>
+    </div>
+    <div style="font-size:13px; color:var(--muted);">
+      График на любой год: <b>2026, 2027, 2028, 2029, 2030+</b>
+    </div>
+  </div>
+
+  <!-- Панель фильтров и кнопок -->
+  <div class="controls-card">
+    <div class="controls-row">
+      <div class="filters-wrap">
+        <input type="text" id="searchInput" placeholder="🔍 Поиск по ФИО..." oninput="renderApp()">
+        
+        <select id="filterCompany" onchange="renderApp()">
+          <option value="ALL">🏢 Все компании</option>
+        </select>
+
+        <select id="filterRole" onchange="renderApp()">
+          <option value="ALL">👔 Все должности</option>
+        </select>
+      </div>
+
+      <div class="actions-wrap">
+        <button class="btn btn-primary" onclick="openEmpModal()">➕ Добавить сотрудника</button>
+        <button class="btn btn-outline" onclick="openCompModal()">🏢 Список компаний</button>
+        <button class="btn btn-outline" onclick="openRoleModal()">👔 Список должностей</button>
+        <button class="btn btn-outline" id="btnToggleView" onclick="toggleView()">📄 Вид таблицы</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Вид 1: Календарь (12 месяцев) -->
+  <div id="calendarView" class="months-grid"></div>
+
+  <!-- Вид 2: Общая таблица -->
+  <div id="tableView" class="table-card" style="display:none;">
+    <table>
+      <thead>
+        <tr>
+          <th>№</th>
+          <th>Компания филиала</th>
+          <th>ФИО Сотрудника</th>
+          <th>Должность</th>
+          <th>Дата прошлого осмотра</th>
+          <th>Срок следующего (План)</th>
+          <th>Период</th>
+          <th>Действие</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- МОДАЛКА: Добавление сотрудника -->
+<div class="modal-overlay" id="empModal">
+  <div class="modal-box">
+    <div class="modal-head">Добавить сотрудника в график</div>
+
+    <div class="form-field">
+      <label>ФИО Сотрудника *</label>
+      <input type="text" id="empFio" placeholder="Например: Иванов Иван Иванович">
+    </div>
+
+    <div class="form-field">
+      <label>Компания холдинга *</label>
+      <select id="empCompanySelect"></select>
+    </div>
+
+    <div class="form-field">
+      <label>Должность *</label>
+      <select id="empRoleSelect"></select>
+    </div>
+
+    <div class="form-field">
+      <label>Дата последнего пройденного медосмотра *</label>
+      <input type="date" id="empLastDate">
+    </div>
+
+    <div class="form-field">
+      <label>Периодичность повторения</label>
+      <select id="empPeriod">
+        <option value="12" selected>1 раз в год (через 12 месяцев)</option>
+        <option value="6">2 раза в год (через 6 месяцев)</option>
+        <option value="24">1 раз в 2 года (через 24 месяца)</option>
+      </select>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('empModal')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">Сохранить в график</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА: Управление компаниями -->
+<div class="modal-overlay" id="compModal">
+  <div class="modal-box">
+    <div class="modal-head">Компании холдинга «Шамса»</div>
+    <div class="chips-list" id="companiesContainer"></div>
+    <div class="form-field">
+      <label>Добавить новую компанию / филиал:</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="newCompInput" placeholder="Например: ООО «Новая логистика»">
+        <button class="btn btn-primary" onclick="addNewCompany()">Добавить</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('compModal')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА: Управление должностями -->
+<div class="modal-overlay" id="roleModal">
+  <div class="modal-box">
+    <div class="modal-head">Справочник должностей</div>
+    <div class="chips-list" id="rolesContainer"></div>
+    <div class="form-field">
+      <label>Добавить новую должность:</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="newRoleInput" placeholder="Например: Механик колонны">
+        <button class="btn btn-primary" onclick="addNewRole()">Добавить</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('roleModal')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ТВОЙ ОБЛАЧНЫЙ СЕРВЕР GOOGLE
+const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycby1mj-4jSlyI9t4lU8Ce9W9OgjRoYbwjaXnAcgRZnfCmqB9uiJbPWYnJpChcAHKFwBWHQ/exec";
+
+const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+
+let state = {
+  currentYear: 2027,
+  viewMode: 'grid',
+  companies: JSON.parse(localStorage.getItem('shamsa_comps_simple')) || [
+    "ООО «Шамса-Логистик Центр»",
+    "ООО «Дискам»",
+    "ООО «Шамса-Маркет»",
+    "ООО «Шамса-Холдинг»"
+  ],
+  roles: JSON.parse(localStorage.getItem('shamsa_roles_simple')) || [
+    "Водитель-экспедитор",
+    "Кладовщик",
+    "Грузчик",
+    "Мастер по ремонту",
+    "Парковщик",
+    "Оператор 1С",
+    "Контролер"
+  ],
+  employees: [
+    { id: 1, fio: "Бекшаев Никита Олегович", company: "ООО «Шамса-Логистик Центр»", role: "Водитель-экспедитор", lastDate: "2026-01-14", period: 12 },
+    { id: 2, fio: "Черепанов Александр Николаевич", company: "ООО «Шамса-Логистик Центр»", role: "Водитель-экспедитор", lastDate: "2026-02-10", period: 12 },
+    { id: 3, fio: "Акжигитов Бекжан Абдуталипович", company: "ООО «Дискам»", role: "Водитель-экспедитор", lastDate: "2026-03-05", period: 12 },
+    { id: 4, fio: "Мукашев Назар Мураталиевич", company: "ООО «Шамса-Маркет»", role: "Кладовщик", lastDate: "2026-03-20", period: 12 },
+    { id: 5, fio: "Карапетян Гамлет Григоревич", company: "ООО «Шамса-Холдинг»", role: "Мастер по ремонту", lastDate: "2026-04-12", period: 12 },
+    { id: 6, fio: "Козлов Дмитрий Николаевич", company: "ООО «Шамса-Логистик Центр»", role: "Водитель-экспедитор", lastDate: "2026-05-18", period: 12 }
+  ]
+};
+
+function setCloudState(isSyncing, text) {
+  const dot = document.getElementById('cloudDot');
+  const txt = document.getElementById('cloudStatusText');
+  if (isSyncing) {
+    dot.className = 'cloud-dot syncing';
+    txt.innerText = text || 'Синхронизация...';
+  } else {
+    dot.className = 'cloud-dot';
+    txt.innerText = text || 'База подключена';
+  }
+}
+
+async function loadFromGoogleCloud() {
+  setCloudState(true, 'Загрузка...');
+  try {
+    const res = await fetch(GOOGLE_API_URL);
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) {
+      state.employees = data;
+      setCloudState(false, 'База подключена');
+    } else {
+      await syncToGoogleCloud();
+    }
+    renderApp();
+  } catch (err) {
+    setCloudState(false, 'Локальный режим');
+    renderApp();
+  }
+}
+
+async function syncToGoogleCloud() {
+  setCloudState(true, 'Сохранение...');
+  try {
+    await fetch(GOOGLE_API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'saveAll',
+        data: state.employees
+      })
+    });
+    setCloudState(false, 'Данные сохранены');
+  } catch (err) {
+    setCloudState(false, 'Ошибка сети');
+  }
+}
+
+function saveLocalConfigs() {
+  localStorage.setItem('shamsa_comps_simple', JSON.stringify(state.companies));
+  localStorage.setItem('shamsa_roles_simple', JSON.stringify(state.roles));
+}
+
+function getNextDate(lastDateStr, period) {
+  const d = new Date(lastDateStr);
+  d.setMonth(d.getMonth() + parseInt(period));
+  return d;
+}
+
+function formatDate(d) {
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+}
+
+function changeYear(delta) {
+  state.currentYear += delta;
+  document.getElementById('displayYear').innerText = state.currentYear;
+  renderApp();
+}
+
+function toggleView() {
+  state.viewMode = state.viewMode === 'grid' ? 'table' : 'grid';
+  document.getElementById('btnToggleView').innerText = state.viewMode === 'grid' ? '📄 Вид таблицы' : '📅 Вид календаря';
+  document.getElementById('calendarView').style.display = state.viewMode === 'grid' ? 'grid' : 'none';
+  document.getElementById('tableView').style.display = state.viewMode === 'table' ? 'block' : 'none';
+}
+
+function renderApp() {
+  updateDropdowns();
+
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const selectedComp = document.getElementById('filterCompany').value;
+  const selectedRole = document.getElementById('filterRole').value;
+
+  const filtered = state.employees.filter(emp => {
+    const matchFio = emp.fio.toLowerCase().includes(search);
+    const matchComp = selectedComp === 'ALL' || emp.company === selectedComp;
+    const matchRole = selectedRole === 'ALL' || emp.role === selectedRole;
+    return matchFio && matchComp && matchRole;
+  });
+
+  const now = new Date();
+  const nextMonthIdx = (now.getMonth() + 1) % 12;
+  const nextMonthYear = nextMonthIdx === 0 ? now.getFullYear() + 1 : now.getFullYear();
+
+  const nextMonthList = state.employees.filter(e => {
+    const d = getNextDate(e.lastDate, e.period);
+    return d.getMonth() === nextMonthIdx && d.getFullYear() === nextMonthYear;
+  });
+
+  if (nextMonthList.length > 0) {
+    document.getElementById('alertTitle').innerText = `⚠️ МЕДОСМОТРЫ В СЛЕДУЮЩЕМ МЕСЯЦЕ (${MONTHS[nextMonthIdx].toUpperCase()} ${nextMonthYear})`;
+    document.getElementById('alertDesc').innerText = `Необходимо подготовить направления для ${nextMonthList.length} чел.: ${nextMonthList.map(p => p.fio.split(' ')[0]).join(', ')}.`;
+  } else {
+    document.getElementById('alertTitle').innerText = `✅ ГРАФИК ПОД КОНТРОЛЕМ`;
+    document.getElementById('alertDesc').innerText = `В следующем месяце плановых медосмотров нет. Все сотрудники идут по плану.`;
+  }
+
+  const cal = document.getElementById('calendarView');
+  cal.innerHTML = '';
+
+  for (let m = 0; m < 12; m++) {
+    const inMonth = filtered.filter(e => {
+      const d = getNextDate(e.lastDate, e.period);
+      return d.getMonth() === m && d.getFullYear() === state.currentYear;
+    });
+
+    const col = document.createElement('div');
+    col.className = 'month-col';
+    col.innerHTML = `
+      <div class="month-head">
+        <span class="month-title">${MONTHS[m]}</span>
+        <span class="month-badge ${inMonth.length > 0 ? 'has-items' : ''}">${inMonth.length} чел.</span>
+      </div>
+      <div style="flex:1;">
+        ${inMonth.length === 0 ? '<div style="color:#94a3b8; font-size:12px; text-align:center; padding:18px 0;">Нет записей</div>' : ''}
+        ${inMonth.map(e => `
+          <div class="emp-card">
+            <div class="emp-fio">${e.fio}</div>
+            <div class="emp-tag-comp">${e.company}</div>
+            <div class="emp-meta">${e.role}</div>
+            <div class="emp-plan-date">План: ${formatDate(getNextDate(e.lastDate, e.period))}</div>
+            <div class="emp-btns">
+              <button class="btn-sm-done" onclick="markPassed(${e.id})" title="Продлить срок на период">✓ Сдал</button>
+              <button class="btn-sm-del" onclick="deleteEmp(${e.id})">✕</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    cal.appendChild(col);
+  }
+
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = filtered.map((e, idx) => `
+    <tr>
+      <td>${idx + 1}</td>
+      <td><span class="emp-tag-comp">${e.company}</span></td>
+      <td><b>${e.fio}</b></td>
+      <td>${e.role}</td>
+      <td>${formatDate(new Date(e.lastDate))}</td>
+      <td><b style="color:#0284c7;">${formatDate(getNextDate(e.lastDate, e.period))}</b></td>
+      <td>${e.period} мес.</td>
+      <td>
+        <button class="btn-sm-done" onclick="markPassed(${e.id})">✓ Сдал</button>
+        <button class="btn-sm-del" style="margin-left:6px;" onclick="deleteEmp(${e.id})">Удалить</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function updateDropdowns() {
+  const compFilter = document.getElementById('filterCompany');
+  const curComp = compFilter.value;
+  compFilter.innerHTML = `<option value="ALL">🏢 Все компании (${state.companies.length})</option>` +
+    state.companies.map(c => `<option value="${c}" ${c === curComp ? 'selected' : ''}>${c}</option>`).join('');
+
+  const roleFilter = document.getElementById('filterRole');
+  const curRole = roleFilter.value;
+  roleFilter.innerHTML = `<option value="ALL">👔 Все должности (${state.roles.length})</option>` +
+    state.roles.map(r => `<option value="${r}" ${r === curRole ? 'selected' : ''}>${r}</option>`).join('');
+
+  const mComp = document.getElementById('empCompanySelect');
+  mComp.innerHTML = state.companies.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  const mRole = document.getElementById('empRoleSelect');
+  mRole.innerHTML = state.roles.map(r => `<option value="${r}">${r}</option>`).join('');
+}
+
+async function markPassed(id) {
+  const emp = state.employees.find(e => e.id === id);
+  if (!emp) return;
+  emp.lastDate = new Date().toISOString().split('T')[0];
+  renderApp();
+  await syncToGoogleCloud();
+}
+
+async function deleteEmp(id) {
+  if (confirm('Удалить этого сотрудника из графика?')) {
+    state.employees = state.employees.filter(e => e.id !== id);
+    renderApp();
+    await syncToGoogleCloud();
+  }
+}
+
+function openEmpModal() {
+  document.getElementById('empFio').value = '';
+  document.getElementById('empLastDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('empModal').style.display = 'flex';
+}
+
+async function saveEmployee() {
+  const fio = document.getElementById('empFio').value.trim();
+  const company = document.getElementById('empCompanySelect').value;
+  const role = document.getElementById('empRoleSelect').value;
+  const lastDate = document.getElementById('empLastDate').value;
+  const period = parseInt(document.getElementById('empPeriod').value);
+
+  if (!fio) return alert('Введите ФИО сотрудника!');
+
+  state.employees.push({
+    id: Date.now(),
+    fio,
+    company,
+    role,
+    lastDate,
+    period
+  });
+
+  closeModal('empModal');
+  renderApp();
+  await syncToGoogleCloud();
+}
+
+function openCompModal() {
+  renderCompaniesList();
+  document.getElementById('compModal').style.display = 'flex';
+}
+
+function renderCompaniesList() {
+  const box = document.getElementById('companiesContainer');
+  box.innerHTML = state.companies.map((c, idx) => `
+    <div class="chip-item">
+      <span><b>${c}</b></span>
+      <button class="btn-sm-del" onclick="deleteCompany(${idx})">Удалить</button>
+    </div>
+  `).join('');
+}
+
+function addNewCompany() {
+  const val = document.getElementById('newCompInput').value.trim();
+  if (!val) return alert('Введите название компании!');
+  state.companies.push(val);
+  document.getElementById('newCompInput').value = '';
+  renderCompaniesList();
+  saveLocalConfigs();
+  renderApp();
+}
+
+function deleteCompany(idx) {
+  if (confirm('Удалить компанию?')) {
+    state.companies.splice(idx, 1);
+    renderCompaniesList();
+    saveLocalConfigs();
+    renderApp();
+  }
+}
+
+function openRoleModal() {
+  renderRolesList();
+  document.getElementById('roleModal').style.display = 'flex';
+}
+
+function renderRolesList() {
+  const box = document.getElementById('rolesContainer');
+  box.innerHTML = state.roles.map((r, idx) => `
+    <div class="chip-item">
+      <span>${r}</span>
+      <button class="btn-sm-del" onclick="deleteRole(${idx})">Удалить</button>
+    </div>
+  `).join('');
+}
+
+function addNewRole() {
+  const val = document.getElementById('newRoleInput').value.trim();
+  if (!val) return alert('Введите название должности!');
+  state.roles.push(val);
+  document.getElementById('newRoleInput').value = '';
+  renderRolesList();
+  saveLocalConfigs();
+  renderApp();
+}
+
+function deleteRole(idx) {
+  if (confirm('Удалить эту должность из справочника?')) {
+    state.roles.splice(idx, 1);
+    renderRolesList();
+    saveLocalConfigs();
+    renderApp();
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function exportToExcel() {
+  let table = `<table border="1">
+    <tr>
+      <th>№</th>
+      <th>Компания филиала</th>
+      <th>ФИО</th>
+      <th>Должность</th>
+      <th>Дата предыдущего медосмотра</th>
+      <th>Плановый срок сдачи</th>
+      <th>Месяц плана</th>
+    </tr>`;
+
+  state.employees.forEach((e, i) => {
+    const nextD = getNextDate(e.lastDate, e.period);
+    table += `<tr>
+      <td>${i + 1}</td>
+      <td>${e.company}</td>
+      <td>${e.fio}</td>
+      <td>${e.role}</td>
+      <td>${formatDate(new Date(e.lastDate))}</td>
+      <td>${formatDate(nextD)}</td>
+      <td>${MONTHS[nextD.getMonth()]} ${nextD.getFullYear()}</td>
+    </tr>`;
+  });
+  table += `</table>`;
+
+  const blob = new Blob(['\ufeff' + table], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `План_медосмотров_Шамса_${state.currentYear}.xls`;
+  a.click();
+}
+
+document.getElementById('displayYear').innerText = state.currentYear;
+loadFromGoogleCloud();
+</script>
+
+</body>
+</html>
